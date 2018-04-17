@@ -30,9 +30,12 @@ def query_pages():
         last_continue = response['continue']
 
 
-def parse_page(id):
+def get_page(id):
     url = 'https://ru.wiktionary.org/wiki/'
-    doc = requests.get(url, params={'curid': id}).content
+    return requests.get(url, params={'curid': id}).content
+
+
+def get_verb(doc):
     soup = BeautifulSoup(doc, 'html.parser')
     tables = soup.findAll('table', {'rules': 'all'})
 
@@ -85,6 +88,11 @@ def remove_accents(word):
     return ''.join((c for c in unicodedata.normalize('NFD', word) if unicodedata.category(c) != 'Mn'))
 
 
+def get_progress(current, total):
+    progress = round(current / total * 100)
+    return f'{progress}%'
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Scrape Russian verb forms from Wiktionary.', add_help=True)
     parser.add_argument('--filename', type=str, default='verbs.csv',
@@ -101,7 +109,8 @@ if __name__ == '__main__':
         for response in query_pages():
             for e in response['categorymembers']:
                 pageid = e['pageid']
-                verb = parse_page(pageid)
+                page = get_page(id)
+                verb = get_verb(page)
 
                 if verb is None:
                     continue
@@ -113,5 +122,4 @@ if __name__ == '__main__':
                 w.writerow(verb)
 
                 counter += 1
-                progress = round(counter / TOTAL_PAGES * 100)
-                print(f'{progress}% {e}')
+                print(f'{get_progress(counter, TOTAL_PAGES)} {e}')
