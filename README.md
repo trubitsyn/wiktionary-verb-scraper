@@ -7,7 +7,7 @@ Python script that scrapes Russian verb forms from Wiktionary
 ```
 MIT License
 
-Copyright (c) 2016 Nikola Trubitsyn
+Copyright (c) 2016, 2018 Nikola Trubitsyn
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
