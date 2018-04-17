@@ -52,7 +52,7 @@ def parse_page(id):
             for td in item.findAll("td"):
                 td.unwrap()
 
-            text = remove_accents(item.text.replace('△', '').replace('*', ''))
+            text = sanitize(item.text)
 
             if "\n" in text:
                 forms.extend(text.split("\n"))
@@ -74,6 +74,10 @@ def parse_page(id):
         "past_many": forms[14],
         "imperative": forms[7]
     }
+
+
+def sanitize(word):
+    return remove_accents(word).replace('△', '').replace('*', '')
 
 
 def remove_accents(word):
