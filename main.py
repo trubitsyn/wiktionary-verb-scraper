@@ -55,8 +55,8 @@ def parse_page(id):
 
             text = sanitize(item.text)
 
-            if "\n" in text:
-                forms.extend(text.split("\n"))
+            if '\n' in text:
+                forms.extend(text.split('\n'))
             else:
                 forms.append(text)
 
