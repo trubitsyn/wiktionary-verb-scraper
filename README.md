@@ -1,6 +1,6 @@
 # wiktionary-verb-scraper
 
-Python script that scrapes Russian verb forms from Wiktionary
+Python script that scrapes Russian verb forms from Wiktionary.
 
 # Usage
 
