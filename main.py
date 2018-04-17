@@ -7,7 +7,7 @@ from bs4 import BeautifulSoup
 
 
 def query_pages():
-    request = {'format': 'json',
+    params = {'format': 'json',
                'action': 'query',
                'list': 'categorymembers',
                'cmtitle': 'Категория:Русские_глаголы'}
@@ -15,9 +15,8 @@ def query_pages():
     last_continue = {'continue': ''}
 
     while True:
-        req = request.copy()
-        req.update(last_continue)
-        response = requests.get('https://ru.wiktionary.org/w/api.php', params=req).json()
+        fresh_params = params.copy().update(last_continue)
+        response = requests.get('https://ru.wiktionary.org/w/api.php', params=fresh_params).json()
 
         if 'error' in response:
             raise ValueError(response['error'])
