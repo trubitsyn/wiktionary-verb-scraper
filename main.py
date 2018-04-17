@@ -36,7 +36,7 @@ def parse_page(id):
     soup = BeautifulSoup(doc, 'html.parser')
     tables = soup.findAll('table', {'rules': 'all'})
 
-    if len(tables) == 0:
+    if not tables:
         return None
 
     verb_forms = tables[0]
