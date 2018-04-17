@@ -1,3 +1,4 @@
+import argparse
 import csv
 import unicodedata
 
@@ -85,9 +86,15 @@ def remove_accents(word):
 
 
 if __name__ == "__main__":
-    TOTAL_PAGES = 34704
+    parser = argparse.ArgumentParser(description='Scrape Russian verb forms from Wiktionary.', add_help=True)
+    parser.add_argument('--filename', type=str, default='verbs.csv',
+                        help='file to save verb forms to (default: verbs.csv)')
 
-    with open('verbs.csv', 'w', newline='') as f:
+    args = parser.parse_args()
+    filename = args.filename
+
+    with open(filename, 'w', newline='') as f:
+        TOTAL_PAGES = 34704
         counter = 0
         w = None
 
