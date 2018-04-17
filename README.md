@@ -2,6 +2,18 @@
 
 Python script that scrapes Russian verb forms from Wiktionary
 
+# Usage
+
+```
+usage: main.py [-h] [--filename FILENAME]
+
+Scrape Russian verb forms from Wiktionary.
+
+optional arguments:
+  -h, --help           show this help message and exit
+  --filename FILENAME  file to save verb forms to (default: verbs.csv)
+```
+
 # LICENSE
 
 ```
