@@ -74,7 +74,6 @@ def get_verb(doc):
 
 def sanitize(word):
     return ''.join(filter(
-        # we can use set instead of list here, but meh...
         lambda x: unicodedata.category(x) != 'Mn' and x not in ['△', '*'],
         unicodedata.normalize('NFD', word)
     ))
