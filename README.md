@@ -5,7 +5,7 @@ Python script that scrapes Russian verb forms from Wiktionary.
 ## Usage
 
 ```
-usage: wiktionary-verb-scraper.py [-h] [--filename FILENAME]
+usage: wiktionary_verb_scraper.py [-h] [--filename FILENAME]
 
 Scrape Russian verb forms from Wiktionary.
 
@@ -19,7 +19,7 @@ optional arguments:
 ```
 MIT License
 
-Copyright (c) 2016, 2018 Nikola Trubitsyn
+Copyright (c) 2016, 2018 Nikola Trubitsyn and contributors
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
