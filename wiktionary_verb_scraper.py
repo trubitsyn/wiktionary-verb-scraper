@@ -30,6 +30,7 @@ def query_pages():
         if 'continue' not in resp:
             break
         params.update(resp['continue'])
+        print(f'Getting next page with {params}')
 
 
 def get_page(page_id):
@@ -55,21 +56,25 @@ def get_verb(doc):
             filter(lambda x: isinstance(x, str), item.contents)
         )
 
-    return {
-        'present_i': forms[0],
-        'present_thou': forms[4],
-        'present_it': forms[8],
+    try:
+        return {
+            'present_i': forms[0],
+            'present_thou': forms[4],
+            'present_it': forms[8],
 
-        'present_we': forms[13],
-        'present_you': forms[16],
-        'present_they': forms[19],
+            'present_we': forms[13],
+            'present_you': forms[16],
+            'present_they': forms[19],
 
-        'past_male': forms[9],
-        'past_female': forms[10],
-        'past_neutral': forms[11],
-        'past_many': forms[14],
-        'imperative': forms[7]
-    }
+            'past_male': forms[9],
+            'past_female': forms[10],
+            'past_neutral': forms[11],
+            'past_many': forms[14],
+            'imperative': forms[7]
+        }
+    except IndexError as ex:
+        print(ex, columns)
+        return None
 
 
 def sanitize(word):
@@ -96,6 +101,7 @@ def main(*args, **kwargs):
                 verb = get_verb(page)
 
                 if verb is None:
+                    print(f'An error occured on page {page_id} processing')
                     continue
 
                 if counter == 0:
