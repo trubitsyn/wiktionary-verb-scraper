@@ -1,66 +1,59 @@
 import argparse
 import csv
 import unicodedata
+from collections import defaultdict
 
 import requests
 from bs4 import BeautifulSoup
 
 
 def query_pages():
-    params = {'format': 'json',
-               'action': 'query',
-               'list': 'categorymembers',
-               'cmtitle': 'Категория:Русские_глаголы'}
-
-    last_continue = {'continue': ''}
+    params = defaultdict(set, {
+        'format': 'json',
+        'action': 'query',
+        'list': 'categorymembers',
+        'cmtitle': 'Категория:Русские_глаголы',
+    })
 
     while True:
-        fresh_params = params.copy().update(last_continue)
-        response = requests.get('https://ru.wiktionary.org/w/api.php', params=fresh_params).json()
+        resp = requests.get(
+            'https://ru.wiktionary.org/w/api.php',
+            params=params
+        ).json()
 
-        if 'error' in response:
-            raise ValueError(response['error'])
-        if 'warnings' in response:
-            print(response['warnings'])
-        if 'query' in response:
-            yield response['query']
-        if 'continue' not in response:
+        if 'error' in resp:
+            raise ValueError(resp['error'])
+        if 'warnings' in resp:
+            print(resp['warnings'])
+        if 'query' in resp:
+            yield resp['query']
+        if 'continue' not in resp:
             break
-        last_continue = response['continue']
+        params.update(resp['continue'])
 
 
-def get_page(id):
-    url = 'https://ru.wiktionary.org/wiki/'
-    return requests.get(url, params={'curid': id}).content
+def get_page(page_id):
+    url = 'https://ru.m.wiktionary.org/wiki/'
+    return requests.get(
+        url=url,
+        params={
+            'curid': page_id
+        }
+    ).content
 
 
 def get_verb(doc):
     soup = BeautifulSoup(doc, 'html.parser')
-    tables = soup.findAll('table', {'rules': 'all'})
+    columns = soup.findAll('td', {
+        'align': 'left'
+    })
 
-    if not tables:
-        return None
-
-    verb_forms = tables[0]
-    rows = verb_forms.findAll('tr')[1:]
     forms = []
-
-    for row in rows:
-        columns = row.findAll('td')[1:]
-
-        for item in columns:
-            for span in item.findAll('span'):
-                span.unwrap()
-
-            for td in item.findAll('td'):
-                td.unwrap()
-
-            text = sanitize(item.text)
-
-            if '\n' in text:
-                forms.extend(text.split('\n'))
-            else:
-                forms.append(text)
+    for item in columns:
+        forms += map(
+            lambda x: sanitize(x).strip(),
+            filter(lambda x: isinstance(x, str), item.contents)
+        )
 
     return {
         'present_i': forms[0],
@@ -80,45 +73,55 @@ def get_verb(doc):
 
 
 def sanitize(word):
-    return remove_accents(word).replace('△', '').replace('*', '')
-
-
-def remove_accents(word):
-    return ''.join((c for c in unicodedata.normalize('NFD', word) if unicodedata.category(c) != 'Mn'))
+    return ''.join(filter(
+        # we can use set instead of list here, but meh...
+        lambda x: unicodedata.category(x) != 'Mn' and x not in ['△', '*'],
+        unicodedata.normalize('NFD', word)
+    ))
 
 
 def get_progress(current, total):
-    progress = round(current / total * 100)
-    return f'{progress}%'
+    return f'{round(current / total * 100)}%'
 
 
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Scrape Russian verb forms from Wiktionary.', add_help=True)
-    parser.add_argument('--filename', type=str, default='verbs.csv',
-                        help='file to save verb forms to (default: verbs.csv)')
-
-    args = parser.parse_args()
-    filename = args.filename
-
-    with open(filename, 'w', newline='') as f:
-        TOTAL_PAGES = 34704
+def main(*args, **kwargs):
+    total_pages = 34704
+    with open(kwargs['filename'], 'w', newline='', buffering=1) as fw:
         counter = 0
-        w = None
+        writer = None
 
         for response in query_pages():
-            for e in response['categorymembers']:
-                pageid = e['pageid']
-                page = get_page(id)
+            for elem in response['categorymembers']:
+                page_id = elem['pageid']
+                page = get_page(page_id)
                 verb = get_verb(page)
 
                 if verb is None:
                     continue
 
                 if counter == 0:
-                    w = csv.DictWriter(f, verb.keys())
-                    w.writeheader()
+                    writer = csv.DictWriter(fw, verb.keys())
+                    writer.writeheader()
 
-                w.writerow(verb)
+                writer.writerow(verb)
 
                 counter += 1
-                print(f'{get_progress(counter, TOTAL_PAGES)} {e}')
+                print(f'{get_progress(counter, total_pages)} {elem}')
+
+
+def argparser():
+    parser = argparse.ArgumentParser(
+        description='Scrape Russian verb forms from Wiktionary.',
+        add_help=True
+    )
+    parser.add_argument(
+        '--filename',
+        type=str,
+        default='verbs.csv',
+        help='file to save verb forms to (default: verbs.csv)'
+    )
+    return parser
+
+
+if __name__ == '__main__':
+    main(**vars(argparser().parse_args()))
